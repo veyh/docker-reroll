@@ -7,8 +7,8 @@ dev:
 
 debug:
 	mkdir -p dist
-	cargo build --target x86_64-unknown-linux-musl
-	ln -f "target/x86_64-unknown-linux-musl/debug/${name}" "dist/"
+	cargo build
+	ln -f "target/debug/${name}" "dist/"
 
 release:
 	mkdir -p dist
