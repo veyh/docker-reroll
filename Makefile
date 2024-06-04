@@ -1,4 +1,5 @@
 name := $(shell dasel -f Cargo.toml package.name)
+version := $(shell dasel -f Cargo.toml package.version)
 
 .PHONY: dev debug release lint test clean deploy
 
@@ -27,4 +28,4 @@ clean:
 deploy: release
 	rclone copyto \
 		"target/x86_64-unknown-linux-musl/release/${name}" \
-		"r2:/cdn-soupbawx-com/${name}"
+		"r2:/cdn-soupbawx-com/${name}/docker-reroll-${version}-x86_64-unknown-linux-musl"
