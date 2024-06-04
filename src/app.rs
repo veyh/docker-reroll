@@ -50,7 +50,7 @@ struct AppArgs {
     #[arg(long, default_value_t = 0)]
     wait_after_healthy: u64,
 
-    /// Service(s) to deploy.
+    /// Service to deploy.
     #[arg()]
     service: String,
 }
