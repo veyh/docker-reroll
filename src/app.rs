@@ -16,6 +16,7 @@ const METADATA: &str = r#"{
 }"#;
 
 #[derive(Debug, Parser, Clone)]
+#[command(about,version)]
 struct AppArgs {
     /// Compose configuration file
     #[arg(short, long)]

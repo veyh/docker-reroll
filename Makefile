@@ -1,6 +1,6 @@
 name := $(shell dasel -f Cargo.toml package.name)
 
-.PHONY: dev debug release lint test clean
+.PHONY: dev debug release lint test clean deploy
 
 dev:
 	while true; do fd . | entr -ccd make lint test debug; done
@@ -23,3 +23,8 @@ test:
 
 clean:
 	cargo clean
+
+deploy: release
+	rclone copyto \
+		"target/x86_64-unknown-linux-musl/release/${name}" \
+		"r2:/cdn-soupbawx-com/${name}"
