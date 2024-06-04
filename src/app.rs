@@ -208,7 +208,7 @@ impl App {
     }
 
     fn is_service_running(&self) -> Result<bool> {
-        Ok(self.get_container_ids()?.is_empty())
+        Ok(!self.get_container_ids()?.is_empty())
     }
 
     fn start_service(&self) -> Result<()> {
