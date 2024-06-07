@@ -26,10 +26,4 @@ clean:
 	cargo clean
 
 deploy: release
-	rclone copyto \
-		"target/x86_64-unknown-linux-musl/release/${name}" \
-		"r2:/cdn-soupbawx-com/${name}/docker-reroll-${version}-x86_64-unknown-linux-musl"
-
-	rclone copyto \
-		"target/x86_64-unknown-linux-musl/release/${name}" \
-		"r2:/cdn-soupbawx-com/${name}/docker-reroll-latest-x86_64-unknown-linux-musl"
+	scripts/deploy.sh "${name}" "${version}"
