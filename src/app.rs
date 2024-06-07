@@ -102,9 +102,11 @@ impl App {
             env_args = env_args_new;
         }
 
+        let args = AppArgs::parse_from(env_args);
+        let compose_command = Self::detect_compose_command()?;
         let mut app = Self {
-            args: AppArgs::parse_from(env_args),
-            compose_command: Self::detect_compose_command()?,
+            args,
+            compose_command,
             docker_args,
         };
 
@@ -113,28 +115,30 @@ impl App {
 
     fn detect_compose_command() -> Result<Exec> {
         let cmd = Exec::cmd("docker").arg("compose");
-        let exit_status = cmd
+        let res = cmd
             .clone()
-            .stdout(NullFile)
-            .stderr(NullFile)
-            .join()?;
+            .stdout(Redirection::Pipe)
+            .stderr(Redirection::Merge)
+            .capture()?;
 
-        if exit_status.success() {
+        if res.exit_status.success()
+        && res.stdout_str().contains("docker compose") {
             return Ok(cmd);
         }
 
         let cmd = Exec::cmd("docker-compose");
-        let exit_status = cmd
+        let res = cmd
             .clone()
-            .stdout(NullFile)
-            .stderr(NullFile)
-            .join()?;
+            .stdout(Redirection::Pipe)
+            .stderr(Redirection::Merge)
+            .capture()?;
 
-        if exit_status.success() {
+        if res.exit_status.success()
+        && res.stdout_str().contains("docker-compose") {
             return Ok(cmd);
         }
 
-        bail!("docker compose command not found");
+        bail!("docker compose command not detected");
     }
 
     fn compose_command(&self) -> Exec {
