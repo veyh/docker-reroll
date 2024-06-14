@@ -134,7 +134,10 @@ impl App {
             .capture()?;
 
         if res.exit_status.success()
-        && res.stdout_str().contains("docker-compose") {
+        && (
+            res.stdout_str().contains("docker-compose") ||
+            res.stdout_str().contains("docker compose")
+        ) {
             return Ok(cmd);
         }
 
