@@ -112,7 +112,7 @@ Output might look something like this
 2024-06-15T07:38:06.254073Z DEBUG docker_reroll::app: done
 ```
 
-If you were to run a the curl command above in a tight loop while deploying, you shouldn't see any 5xx errors (which you would see with [docker-rollout](https://github.com/Wowu/docker-rollout/)).
+If you were to run the curl command above in a tight loop while deploying, you shouldn't see any 5xx errors (which you would see with [docker-rollout](https://github.com/Wowu/docker-rollout/)).
 
 **NOTE: Use a unique `traefik_id` label in the compose file to make sure that Traefik doesn't interact with unrelated containers!**
 
