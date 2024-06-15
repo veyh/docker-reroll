@@ -1,0 +1,30 @@
+services:
+  example:
+    image: kennethreitz/httpbin
+    depends_on:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.example.entrypoints=web"
+      - "traefik.http.routers.example.rule=PathPrefix(`/`)"
+      - "traefik_id=example"
+    healthcheck:
+      test: "! test -e /.dead"
+      retries: 2
+      start_period: 0s
+      interval: 1s
+      timeout: 1s
+
+  traefik:
+    image: traefik:v2.9
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--providers.docker.constraints=Label(`traefik_id`, `example`)"
+    ports:
+      - "127.115.183.188:3000:80"
+      - "127.115.183.188:3001:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"

@@ -8,7 +8,7 @@ This is a tool for zero-downtime deployment of docker containers, very much like
 mkdir -p ~/.docker/cli-plugins
 
 curl -fsSL \
-  httos://cdn.soupbawx.com/docker-reroll/docker-reroll-1.0.0-x86_64-unknown-linux-musl \
+  https://cdn.soupbawx.com/docker-reroll/docker-reroll-latest-x86_64-unknown-linux-musl \
   -o ~/.docker/cli-plugins/docker-reroll
 
 chmod +x ~/.docker/cli-plugins/docker-rollout
@@ -41,4 +41,88 @@ Options:
           Print help
   -V, --version
           Print version
+```
+
+## Example: Traefik
+
+Go into `examples/traefik` directory. In one terminal, do
+
+```sh
+docker compose up
+```
+
+From another terminal, try eg.
+
+```sh
+curl -i http://127.115.183.188:3000/status/200
+```
+
+```
+HTTP/1.1 200 OK
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Content-Length: 0
+Content-Type: text/html; charset=utf-8
+Date: Sat, 15 Jun 2024 07:13:04 GMT
+Server: gunicorn/19.9.0
+```
+
+Now, to ensure a proper zero-downtime deployment, we want to start a new container and wait for it to become healthy, then make sure that the old container becomes unhealthy (which drops it from Traefik's load balancer) before removing it.
+
+When the health check in our compose file is simply
+
+````yml
+healthcheck:
+  test: "! test -e /.dead"
+````
+
+We can then do
+
+```sh
+docker reroll \
+  --pre-stop-cmd 'docker exec {id} touch /.dead' \
+  --pre-stop-wait-until-unhealthy \
+  example
+```
+
+Output might look something like this
+
+```
+2024-06-15T07:38:01.187563Z DEBUG docker_reroll::app: self=App { args: AppArgs { file: None, env_file: None, pre_stop_cmd: Some("docker exec {id} touch /.dead"), pre_stop_wait_until_unhealthy: true, healthcheck_timeout: 60, wait: 10, wait_after_healthy: 0, service: "example" }, compose_command: Exec { docker compose }, docker_args: [] }
+2024-06-15T07:38:01.304160Z DEBUG docker_reroll::app: old_ids=["fcbccba6cb7cf224dd7ab1d67ca935f95be60782475019909fadeb393856e1a6"]
+2024-06-15T07:38:01.304197Z DEBUG docker_reroll::app: scale from 1 to 2 instances
+[+] Running 3/3
+ ✔ Container traefik-traefik-1  Running        0.0s
+ ✔ Container traefik-example-1  Running        0.0s
+ ✔ Container traefik-example-2  Started        0.2s
+2024-06-15T07:38:01.960876Z DEBUG docker_reroll::app: all_ids=["fcbccba6cb7cf224dd7ab1d67ca935f95be60782475019909fadeb393856e1a6", "c4369d8ac6a25635c9173a1825d49b0927e9ef175ed096a6b3e482eabec8d996"]
+2024-06-15T07:38:01.960909Z DEBUG docker_reroll::app: new_ids=["c4369d8ac6a25635c9173a1825d49b0927e9ef175ed096a6b3e482eabec8d996"]
+2024-06-15T07:38:01.974485Z DEBUG docker_reroll::app: wait for new containers to be healthy (timeout 60 seconds)
+2024-06-15T07:38:01.987508Z DEBUG docker_reroll::app: healthy_count=0 target_count=1
+2024-06-15T07:38:02.999383Z DEBUG docker_reroll::app: healthy_count=1 target_count=1
+2024-06-15T07:38:02.999433Z DEBUG docker_reroll::app: run pre-stop command cmd="docker exec fcbccba6cb7cf224dd7ab1d67ca935f95be60782475019909fadeb393856e1a6 touch /.dead"
+2024-06-15T07:38:03.077105Z DEBUG docker_reroll::app: wait for old containers to be unhealthy (timeout 60 seconds)
+2024-06-15T07:38:03.090285Z DEBUG docker_reroll::app: healthy_count=1 target_count=0
+2024-06-15T07:38:04.102987Z DEBUG docker_reroll::app: healthy_count=1 target_count=0
+2024-06-15T07:38:05.116826Z DEBUG docker_reroll::app: healthy_count=0 target_count=0
+2024-06-15T07:38:05.116867Z DEBUG docker_reroll::app: stop old containers
+2024-06-15T07:38:05.116880Z DEBUG docker_reroll::app: stop container_ids=["fcbccba6cb7cf224dd7ab1d67ca935f95be60782475019909fadeb393856e1a6"]
+2024-06-15T07:38:06.192339Z DEBUG docker_reroll::app: remove old containers
+2024-06-15T07:38:06.192386Z DEBUG docker_reroll::app: remove container_ids=["fcbccba6cb7cf224dd7ab1d67ca935f95be60782475019909fadeb393856e1a6"]
+2024-06-15T07:38:06.254073Z DEBUG docker_reroll::app: done
+```
+
+If you were to run a the curl command above in a tight loop while deploying, you shouldn't see any 5xx errors (which you would see with [docker-rollout](https://github.com/Wowu/docker-rollout/)).
+
+**NOTE: Use a unique `traefik_id` label in the compose file to make sure that Traefik doesn't interact with unrelated containers!**
+
+
+```yml
+services:
+  example:
+    labels:
+      - "traefik_id=example"
+  traefik:
+    command:
+      - "--providers.docker.constraints=Label(`traefik_id`, `example`)"
 ```
