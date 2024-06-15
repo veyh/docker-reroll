@@ -13,8 +13,8 @@ if [[ -z "${name}" ]] || [[ -z "${version}" ]]; then
   exit 1
 fi
 
-versioned="r2:/cdn-soupbawx-com/${name}/docker-reroll-${version}-x86_64-unknown-linux-musl"
-latest=r2:/cdn-soupbawx-com/${name}/docker-reroll-latest-x86_64-unknown-linux-musl
+versioned="r2:/cdn-soupbawx-com/${name}/${name}-${version}-x86_64-unknown-linux-musl"
+latest=r2:/cdn-soupbawx-com/${name}/${name}-latest-x86_64-unknown-linux-musl
 
 if rclone lsf "${versioned}" | grep -q .; then
   echo "ERROR: ${versioned} already exists"
