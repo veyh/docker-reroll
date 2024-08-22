@@ -11,7 +11,7 @@ curl -fsSL \
   https://cdn.soupbawx.com/docker-reroll/docker-reroll-latest-x86_64-unknown-linux-musl \
   -o ~/.docker/cli-plugins/docker-reroll
 
-chmod +x ~/.docker/cli-plugins/docker-rollout
+chmod +x ~/.docker/cli-plugins/docker-reroll
 ```
 
 ## Usage
