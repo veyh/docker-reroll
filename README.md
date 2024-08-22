@@ -54,17 +54,18 @@ docker compose up
 From another terminal, try eg.
 
 ```sh
-curl -i http://127.115.183.188:3000/status/200
+curl -i http://127.115.183.188:3000/
 ```
 
 ```
 HTTP/1.1 200 OK
-Access-Control-Allow-Credentials: true
-Access-Control-Allow-Origin: *
-Content-Length: 0
-Content-Type: text/html; charset=utf-8
-Date: Sat, 15 Jun 2024 07:13:04 GMT
-Server: gunicorn/19.9.0
+Content-Length: 12
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 22 Aug 2024 17:24:57 GMT
+X-App-Name: http-echo
+X-App-Version: 1.0.0
+
+hello world
 ```
 
 Now, to ensure a proper zero-downtime deployment, we want to start a new container and wait for it to become healthy, then make sure that the old container becomes unhealthy (which drops it from Traefik's load balancer) before removing it.
@@ -112,7 +113,7 @@ Output might look something like this
 2024-06-15T07:38:06.254073Z DEBUG docker_reroll::app: done
 ```
 
-If you were to run the curl command above in a tight loop while deploying, you shouldn't see any 5xx errors (which you would see with [docker-rollout](https://github.com/Wowu/docker-rollout/)).
+If you were to run the curl command above in a tight loop while deploying, you shouldn't see any 5xx errors (which you **would** see with [docker-rollout](https://github.com/Wowu/docker-rollout/)).
 
 **NOTE: Use a unique `traefik_id` label in the compose file to make sure that Traefik doesn't interact with unrelated containers!**
 

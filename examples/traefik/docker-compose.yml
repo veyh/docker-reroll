@@ -1,6 +1,6 @@
 services:
   example:
-    image: kennethreitz/httpbin
+    build: .
     depends_on:
       - traefik
     labels:
