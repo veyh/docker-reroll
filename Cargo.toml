@@ -2,6 +2,16 @@
 name = "docker-reroll"
 version = "1.0.2"
 edition = "2021"
+description = "Zero-downtime deployment of Docker containers"
+homepage = "https://github.com/veyh/docker-reroll"
+repository = "https://github.com/veyh/docker-reroll"
+license = "MIT"
+exclude = [
+    ".changes/*",
+    ".changeie.yaml",
+    "scripts/*",
+    "Makefile",
+]
 
 [dependencies]
 anyhow = "1.0.79"
